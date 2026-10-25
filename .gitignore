@@ -1,0 +1,14 @@
+# PlatformIO build artifacts and downloaded libraries
+SiglentServer/.pio/
+SiglentServer/compile_commands.json
+
+# VS Code C++ IntelliSense (auto-generated, machine-specific)
+.vscode/c_cpp_properties.json
+SiglentServer/.vscode/
+
+# Claude Code local settings (tool permissions, per-machine config)
+.claude/
+
+# OS artifacts
+.DS_Store
+Thumbs.db

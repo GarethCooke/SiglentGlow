@@ -1,0 +1,274 @@
+/* SiglentGlow — the one stylesheet, linked as /css/style.css by every page.
+   Base and form styles are IguanaPlatform's data/style.css (setup.html, settings.html).
+   The control page (index.html) adds MorayGlow's power button, LED strip and slider,
+   scoped to .container so the form defaults below don't leak into them. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:        #1a1a2e;
+    --card-bg:   #16213e;
+    --surface:   #1e2d4a;
+    --surface-h: #263554;
+    --input-bg:  #0d1526;
+    --text:      #eaeaea;
+    --muted:     #7a8aaa;
+    --on-color:  #f5a623;
+    --off-color: #444;
+    --accent:    #2979ff;
+    --accent-h:  #1565c0;
+    --ok:        #4caf50;
+    --err:       #f44336;
+    --border:    #2a3a5e;
+    --radius:    12px;
+}
+
+html.light {
+    --bg:        #f0f4ff;
+    --card-bg:   #ffffff;
+    --surface:   #dde6f7;
+    --surface-h: #c8d8f0;
+    --input-bg:  #f8faff;
+    --text:      #0d1526;
+    --muted:     #5a6888;
+    --off-color: #94a3b8;
+    --accent:    #1565c0;
+    --accent-h:  #0d47a1;
+    --border:    rgba(0,0,0,0.12);
+}
+
+html { transition: background-color 0.3s ease, color 0.3s ease; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+h1 { font-size: 1.6rem; margin-bottom: 0.25rem; letter-spacing: 0.05em; }
+.sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 2rem; }
+
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 1rem;
+}
+
+button {
+    padding: 1rem;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.05em; transition: background 0.15s;
+}
+button:not(:disabled):hover { background: var(--accent-h); }
+button:disabled { background: var(--surface); color: var(--muted); cursor: not-allowed; }
+
+label {
+    display: block; font-size: 0.8rem; color: var(--muted);
+    margin-bottom: 0.3rem; margin-top: 1rem;
+}
+label:first-of-type { margin-top: 0; }
+
+input {
+    width: 100%; padding: 0.75rem 1rem;
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 1rem; outline: none;
+    transition: border-color 0.15s;
+}
+input:focus { border-color: var(--accent); }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--input-bg) inset;
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--text);
+}
+
+.ok   { color: var(--ok); }
+.fail { color: var(--err); }
+.idle { color: var(--muted); }
+
+#msg, .msg { font-size: 0.85rem; color: var(--muted); min-height: 1.2em; text-align: center; }
+
+.back, .nav-link {
+    font-size: 0.85rem; color: var(--accent);
+    text-decoration: none; margin-top: 1rem; display: inline-block;
+}
+.back:hover, .nav-link:hover { text-decoration: underline; }
+
+.btn-secondary {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    padding: 0.5rem; font-size: 0.8rem; font-weight: 400;
+    margin-top: 0.5rem; letter-spacing: 0; width: 100%; max-width: 360px;
+}
+.btn-secondary:not(:disabled):hover { background: var(--surface); color: var(--text); }
+a.btn-secondary {
+    display: block; text-align: center; text-decoration: none; border-radius: var(--radius);
+}
+
+/* Icon-only theme toggle — resets all inherited button styles */
+.theme-toggle {
+    position: fixed; top: 0.75rem; right: 0.75rem; z-index: 100;
+    background: transparent !important; border: none !important;
+    border-radius: 6px; padding: 0.35rem !important; cursor: pointer;
+    color: var(--muted); line-height: 0;
+    width: auto !important; max-width: none !important;
+    font-size: 0 !important; font-weight: normal !important; letter-spacing: 0 !important;
+    transition: color 0.2s;
+}
+.theme-toggle:hover { color: var(--text); background: transparent !important; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--card-bg); }
+::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-h); }
+
+/* ── Control page (index.html) ─────────────────────────────────────────────── */
+
+.container {
+    width: 100%;
+    max-width: 360px;
+    margin: auto 0;  /* vertically centred in the body column */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.container h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.container .card {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Power button */
+.container .power-btn {
+    width: 80px;
+    height: 80px;
+    padding: 0;
+    border-radius: 50%;
+    border: 3px solid var(--off-color);
+    background: transparent;
+    color: var(--off-color);
+    font-size: 2.5rem;
+    font-weight: normal;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
+    line-height: 1;
+}
+.container .power-btn:not(:disabled):hover { background: transparent; }
+
+.container .power-btn.on {
+    border-color: var(--on-color);
+    color: var(--on-color);
+    box-shadow: 0 0 16px var(--on-color);
+}
+
+.power-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+}
+
+.color-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+}
+
+/* LED strip — always dark regardless of theme */
+.container .led-strip {
+    width: 100%;
+    margin: 0;
+    background: #0c0c0c;
+    border: 1px solid #222;
+    border-radius: 999px;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    cursor: pointer;
+}
+
+.container .led-strip.disabled {
+    cursor: not-allowed;
+}
+
+.led {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #1c1c1c;
+    transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
+}
+
+/* --level (0-1) follows the brightness slider */
+.led.lit {
+    background: var(--color-glow, #fff);
+    opacity: calc(0.3 + 0.7 * var(--level, 1));
+    box-shadow:
+        0 0 6px 2px var(--color-glow, #fff),
+        0 0 18px var(--color-glow, #fff);
+}
+
+.container .led-strip input[type="color"] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Brightness slider */
+.container input[type="range"] {
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border: none;
+    accent-color: var(--on-color);
+    cursor: pointer;
+}
+.container input[type="range"]:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Card header row */
+.card-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Status line */
+.status {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* Navigation links */
+.container .nav-link {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0;
+}
+.container .nav-link:hover { color: var(--text); text-decoration: none; }

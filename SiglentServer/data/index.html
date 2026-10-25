@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiglentGlow</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/css/style.css">
+    <script>if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light');</script>
+</head>
+<body>
+    <button type="button" class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+    </button>
+
+    <div class="container">
+        <h1>SiglentGlow</h1>
+
+        <div class="card">
+            <button id="power-btn" class="power-btn" type="button" aria-label="Toggle power">&#9711;</button>
+            <p id="power-label" class="power-label">OFF</p>
+        </div>
+
+        <div class="card">
+            <p class="color-label">Colour</p>
+            <label class="led-strip disabled" id="led-strip" title="Click to pick colour">
+                <input type="color" id="color-picker" value="#ffffff" disabled aria-label="Pick colour">
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+                <span class="led"></span>
+            </label>
+        </div>
+
+        <div class="card">
+            <div class="card-row">
+                <p class="color-label">Brightness</p>
+                <p id="brightness-value" class="color-label">50%</p>
+            </div>
+            <input type="range" id="brightness" min="0" max="255" value="128" disabled aria-label="Brightness">
+        </div>
+
+        <p id="status" class="status">Connecting...</p>
+        <a href="settings.html" class="nav-link">Device settings &rsaquo;</a>
+        <a href="setup.html" class="nav-link">WiFi settings &rsaquo;</a>
+    </div>
+
+    <script>
+    var SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+    var MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    function toggleTheme() {
+      var light = document.documentElement.classList.toggle('light');
+      localStorage.setItem('theme', light ? 'light' : 'dark');
+      document.getElementById('theme-icon').innerHTML = light ? MOON : SUN;
+    }
+    document.getElementById('theme-icon').innerHTML = document.documentElement.classList.contains('light') ? MOON : SUN;
+    </script>
+    <script src="js/siglent.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

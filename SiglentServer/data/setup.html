@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Device Setup</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .card-title { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+  .net-list { display: flex; flex-direction: column; gap: 0.4rem; min-height: 2rem; }
+  .net-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 0.75rem; background: var(--surface); border-radius: 8px;
+    cursor: pointer; border: 1px solid transparent; transition: border-color 0.15s;
+  }
+  .net-item:hover { border-color: var(--border); }
+  .net-item.selected { border-color: var(--accent); }
+  .net-name { font-size: 0.9rem; font-weight: 600; }
+  .net-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); }
+  .scanning { font-size: 0.85rem; color: var(--muted); padding: 0.4rem 0; }
+  .btn-row { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
+  .btn-row button { flex: 1; padding: 0.9rem; width: auto; }
+  button.secondary { background: var(--surface); color: var(--muted); flex: 0 0 auto; padding: 0.9rem 1rem; }
+  button.secondary:not(:disabled):hover { background: var(--surface-h); color: var(--text); }
+  button.rescan { flex: none; padding: 0.1rem 0.5rem; font-size: 0.75rem; border-radius: 6px; }
+  .url-card { background: var(--card-bg); border-radius: var(--radius); padding: 1rem 1.5rem; width: 100%; max-width: 360px; margin-bottom: 1rem; }
+  .url-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.25rem; }
+  .url-link { font-size: 0.9rem; color: var(--accent); word-break: break-all; }
+</style>
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light');</script>
+</head>
+<body>
+<button type="button" class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+  <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+</button>
+
+<h1 id="title">Setting up&hellip;</h1>
+<p class="sub">WiFi Setup</p>
+
+<div class="url-card" id="url-card" hidden>
+  <div class="url-label">After connecting, find your device at</div>
+  <a class="url-link" id="url-link" href="#"></a>
+</div>
+
+<div class="card">
+  <div class="card-title">Available Networks <span>&middot; <button type="button" class="secondary rescan" id="rescan" onclick="startScan()">Rescan</button></span></div>
+  <div class="net-list" id="net-list"><p class="scanning">Scanning&hellip;</p></div>
+</div>
+
+<div class="card">
+  <label for="ssid">Network name (SSID)</label>
+  <input id="ssid" type="text" placeholder="MyNetwork" autocomplete="off" autocorrect="off" spellcheck="false">
+  <label for="pass">Password</label>
+  <input id="pass" type="password" placeholder="leave empty for open networks" autocomplete="off">
+  <div class="btn-row">
+    <button type="button" id="btn" disabled onclick="save()">Connect</button>
+  </div>
+</div>
+<div id="msg"></div>
+
+<a class="back" id="back" href="/">&#8592; Back</a>
+
+<script>
+var SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+var MOON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+function toggleTheme() {
+  var light = document.documentElement.classList.toggle('light');
+  localStorage.setItem('theme', light ? 'light' : 'dark');
+  document.getElementById('theme-icon').innerHTML = light ? MOON : SUN;
+}
+document.getElementById('theme-icon').innerHTML = document.documentElement.classList.contains('light') ? MOON : SUN;
+
+var selectedSsid = null;
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+fetch('/api/deviceinfo').then(function(r) { return r.json(); }).then(function(info) {
+  var n = info.name || 'Device';
+  document.getElementById('title').textContent = n;
+  document.title = n + ' — WiFi Setup';
+  var link = document.getElementById('url-link');
+  link.href = info.url;
+  link.textContent = info.url;
+  document.getElementById('url-card').hidden = false;
+  if (info.ap_mode) document.getElementById('back').remove();
+}).catch(function() {
+  document.getElementById('title').textContent = 'Device';
+});
+
+document.getElementById('ssid').addEventListener('input', function() {
+  document.getElementById('btn').disabled = this.value.trim().length === 0;
+});
+
+function signalLabel(rssi) {
+  if (rssi >= -60) return '▂▄▆█';
+  if (rssi >= -70) return '▂▄▆·';
+  if (rssi >= -80) return '▂▄··';
+  return '▂···';
+}
+
+function networkItemHtml(n) {
+  return '<div class="net-item" data-ssid="' + escHtml(n.ssid) + '" onclick="selectNetwork(this.dataset.ssid)">' +
+    '<span class="net-name">' + escHtml(n.ssid) + '</span>' +
+    '<span class="net-meta">' +
+      '<span style="font-family:monospace">' + signalLabel(n.rssi) + '</span>' +
+      (n.secure ? '<span>🔒</span>' : '') +
+    '</span>' +
+  '</div>';
+}
+
+function selectNetwork(ssid) {
+  selectedSsid = ssid;
+  document.getElementById('ssid').value = ssid;
+  document.getElementById('btn').disabled = false;
+  document.getElementById('pass').focus();
+  document.querySelectorAll('.net-item').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.ssid === ssid);
+  });
+}
+
+function renderNetworks(networks) {
+  var list = document.getElementById('net-list');
+  if (!networks.length) {
+    list.innerHTML = '<p class="scanning">No networks found &mdash; try rescanning.</p>';
+    return;
+  }
+  list.innerHTML = networks.map(networkItemHtml).join('');
+  if (selectedSsid) {
+    document.querySelectorAll('.net-item').forEach(function(el) {
+      el.classList.toggle('selected', el.dataset.ssid === selectedSsid);
+    });
+  }
+}
+
+function startScan() {
+  document.getElementById('net-list').innerHTML = '<p class="scanning">Scanning&hellip;</p>';
+  document.getElementById('rescan').disabled = true;
+  pollNetworks(0);
+}
+
+function pollNetworks(retries) {
+  if (retries > 15) {
+    document.getElementById('rescan').disabled = false;
+    document.getElementById('net-list').innerHTML = '<p class="scanning">Scan timed out &mdash; try rescanning.</p>';
+    return;
+  }
+  fetch('/api/networkdata').then(function(r) { return r.json(); }).then(function(data) {
+    if (data.scanning) {
+      setTimeout(function() { pollNetworks(retries + 1); }, 1000);
+      return;
+    }
+    document.getElementById('rescan').disabled = false;
+    renderNetworks(data.networks || []);
+  }).catch(function() {
+    document.getElementById('rescan').disabled = false;
+    document.getElementById('net-list').innerHTML = '<p class="scanning">Scan failed.</p>';
+  });
+}
+
+function save() {
+  var ssid = document.getElementById('ssid').value.trim();
+  if (!ssid) return;
+  var btn = document.getElementById('btn');
+  var msg = document.getElementById('msg');
+  btn.disabled = true;
+  msg.style.color = 'var(--muted)';
+  msg.textContent = 'Saving…';
+  fetch('/api/networkset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ssid: ssid, password: document.getElementById('pass').value })
+  }).then(function(r) {
+    if (r.ok) {
+      msg.style.color = 'var(--ok)';
+      msg.textContent = 'Saved — device is restarting. Reconnect to your network.';
+    } else { throw new Error('HTTP ' + r.status); }
+  }).catch(function(e) {
+    msg.style.color = 'var(--err)';
+    msg.textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+  });
+}
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Enter') save(); });
+startScan();
+</script>
+</body>
+</html>
