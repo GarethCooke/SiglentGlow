@@ -47,6 +47,8 @@ pio device monitor
 pio test -e native
 ```
 
+USB upload and monitor are pinned to `COM5` in `platformio.ini`. Auto-detect doesn't recognise the XIAO's USB-Serial/JTAG ID (303A:1001) and picks any other serial adapter first.
+
 ### OTA Notes
 
 - OTA uses ArduinoOTA via the `xiao_esp32s3_ota` environment. Password: `password` on first boot (`OTA_PASSWORD`), changeable on `/settings.html`. If you change it, update `upload_flags` too.

@@ -37,12 +37,16 @@ SiglentGlow/
 
 ## Flashing
 
-From `SiglentServer/`, with `pio` = `& "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe"`:
+PlatformIO's installer doesn't put `pio` on PATH on Windows, so the commands below start by aliasing it for the current PowerShell session. Skip that line if `%USERPROFILE%\.platformio\penv\Scripts` is already on your PATH.
 
 ```powershell
+Set-Alias pio "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe"
+cd SiglentServer
 pio run -e xiao_esp32s3 -t upload     # firmware over USB
 pio run -e xiao_esp32s3 -t uploadfs   # web UI over USB
 ```
+
+USB upload and the serial monitor are pinned to `COM5` in `platformio.ini`. If the board shows up on a different port, change `upload_port` / `monitor_port` there, or override the port for one run with `--upload-port COMx`.
 
 After the first setup, use the `xiao_esp32s3_ota` environment for Wi-Fi updates (target `siglentglow.local`, password `password`).
 
@@ -59,6 +63,7 @@ MQTT stays off until a broker host is set.
 ## Tests
 
 ```powershell
+Set-Alias pio "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe"
 cd SiglentServer
 pio test -e native
 ```
